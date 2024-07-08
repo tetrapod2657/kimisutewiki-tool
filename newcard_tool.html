@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新規カード更新効率化ツール</title>
+    <link rel="stylesheet" href="blue.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1>新規カード更新効率化ツール</h1>
+        <p><a href="https://wikiwiki.jp/kimisute/">アルゴナビス -キミが見たステージへ-(キミステ)非公式攻略 Wiki*</a>の更新補助ツールです</p>
+        <p>「テキスト生成」ボタンで<a href="https://wikiwiki.jp/kimisute/%E7%B7%A8%E9%9B%86%E6%8E%B2%E7%A4%BA%E6%9D%BF/%E3%82%AB%E3%83%BC%E3%83%89%E5%80%8B%E5%88%A5%E3%83%9A%E3%83%BC%E3%82%B8%E6%A1%88">カード個別ページ向け出力</a></p>
+        <p>「カードリスト生成」で<a href="https://wikiwiki.jp/kimisute/%E3%82%AB%E3%83%BC%E3%83%89%E4%B8%80%E8%A6%A7">カード一覧ページ(1行目)</a>や<a href="https://wikiwiki.jp/kimisute/%E3%82%B9%E3%82%AD%E3%83%AB%E4%B8%80%E8%A6%A7/%E3%83%A9%E3%82%A4%E3%83%96%E3%82%B9%E3%82%AD%E3%83%AB/%E3%82%AB%E3%83%BC%E3%83%89%E5%88%A5">固有ライブスキル一覧ページ(2行目)</a>向けの出力が可能です。</p>
+        <div class="instruction-box">
+            <p>使い方：</p>
+            <ol>
+                <li>カード情報を入力</li>
+                <li>「テキスト生成」または「カードリスト生成」ボタンをクリック</li>
+                <li>「テキストコピー」ボタンでクリップボードにコピーできます。
+                </li>
+            </ol>
+            <p style="margin-top: 15px;">注意点：</p>
+            <ul>
+                <li>タグの仕様上、一部スキルは以下のように書き換えてください。</li>
+                </li>「-タイプ名-」、「-EX-系」。
+                    例:「Argonavisのキズナ-テクニック-」→「Argonavisのキズナ_テクニック」
+                    例:「ビジュアルDOWN-EX-」→「ビジュアルDOWN_EX」</li>
+                <li>抽出結果を必ず確認し、必要に応じて手動で調整してください</li>
+            </ul>
+        </div>
+
+        <form id="inputForm">
+            <h2>基本情報</h2>
+            <div class="input-group">
+                <label for="cardName">カード名:</label>
+                <input type="text" id="cardName" required tabindex="1">
+            </div>
+            <div class="input-group">
+                <label for="characterName">キャラクター名:</label>
+                <select id="characterName" required onchange="updateBandName()" tabindex="2">
+                    <option value="">選択してください</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="bandName">バンド名:</label>
+                <input type="text" id="bandName" readonly class="readonly" tabindex="-1">
+            </div>
+            <div class="input-group">
+                <label for="rarity">レアリティ:</label>
+                <select id="rarity" required tabindex="3">
+                    <option value="SSR">SSR</option>
+                    <option value="SR">SR</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="type">タイプ:</label>
+                <select id="type" required tabindex="4">
+                    <option value="フィジカル">フィジカル</option>
+                    <option value="パッション">パッション</option>
+                    <option value="テクニック">テクニック</option>
+                    <option value="ビジュアル">ビジュアル</option>
+                    <option value="スマート">スマート</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="implementationDate">実装日:</label>
+                <input type="date" id="implementationDate" required tabindex="5">
+            </div>
+            <div class="input-group">
+                <label for="implementation">実装:</label>
+                <p>「スカウト(スカウト名)」 or 「イベント(イベント名)」 or 「誕生日スカウト」<br>例:イベント(Sweet＆Bitter) 、スカウト(Sweet＆Bitter)</p>
+                <input type="text" id="implementation" required tabindex="6">
+            </div>
+        
+            <h2>ステータス</h2>
+            <div class="status-container">
+                <div class="status-field physical">
+                    <label for="physicalStatus">フィジカル</label>
+                    <input type="number" id="physicalStatus" value="0" tabindex="7">
+                </div>
+                <div class="status-field passion">
+                    <label for="passionStatus">パッション</label>
+                    <input type="number" id="passionStatus" value="0" tabindex="8">
+                </div>
+                <div class="status-field technique">
+                    <label for="techniqueStatus">テクニック</label>
+                    <input type="number" id="techniqueStatus" value="0" tabindex="9">
+                </div>
+                <div class="status-field visual">
+                    <label for="visualStatus">ビジュアル</label>
+                    <input type="number" id="visualStatus" value="0" tabindex="10">
+                </div>
+                <div class="status-field smart">
+                    <label for="smartStatus">スマート</label>
+                    <input type="number" id="smartStatus" value="0" tabindex="11">
+                </div>
+            </div>
+    
+            <h2>成長率</h2>
+            <div class="status-container">
+                <div class="status-field physical">
+                    <label for="physicalGrowth">フィジカル</label>
+                    <input type="number" id="physicalGrowth" value="0" tabindex="12">
+                </div>
+                <div class="status-field passion">
+                    <label for="passionGrowth">パッション</label>
+                    <input type="number" id="passionGrowth" value="0" tabindex="13">
+                </div>
+                <div class="status-field technique">
+                    <label for="techniqueGrowth">テクニック</label>
+                    <input type="number" id="techniqueGrowth" value="0" tabindex="14">
+                </div>
+                <div class="status-field visual">
+                    <label for="visualGrowth">ビジュアル</label>
+                    <input type="number" id="visualGrowth" value="0" tabindex="15">
+                </div>
+                <div class="status-field smart">
+                    <label for="smartGrowth">スマート</label>
+                    <input type="number" id="smartGrowth" value="0" tabindex="16">
+                </div>
+            </div>
+        
+            <h2>ライブスキル情報</h2>
+            <p><a href="https://wikiwiki.jp/kimisute/%E3%82%B9%E3%82%AD%E3%83%AB%E4%B8%80%E8%A6%A7/%E3%83%A9%E3%82%A4%E3%83%96%E3%82%B9%E3%82%AD%E3%83%AB">スキル一覧/ライブスキル</a>
+                を確認お願いします。</p>
+            <div class="input-group">
+                <label for="liveSkill">ライブスキル:</label>
+                <input type="text" id="liveSkill" required tabindex="17">
+            </div>
+            <div class="input-group">
+                <label for="liveSkillDetail">ライブスキル詳細:</label>
+                <input type="text" id="liveSkillDetail" required tabindex="18">
+            </div>
+            <div class="input-group">
+                <label for="acquirableLiveSkill1">獲得可能ライブスキル1:</label>
+                <input type="text" id="acquirableLiveSkill1" required tabindex="19">
+            </div>
+            <div class="input-group">
+                <label for="acquirableLiveSkillDetail1">獲得可能ライブスキル詳細1:</label>
+                <input type="text" id="acquirableLiveSkillDetail1" required tabindex="20">
+            </div>
+            <div class="input-group">
+                <label for="acquirableLiveSkill2">獲得可能ライブスキル2:</label>
+                <input type="text" id="acquirableLiveSkill2" required tabindex="21">
+            </div>
+            <div class="input-group">
+                <label for="acquirableLiveSkillDetail2">獲得可能ライブスキル詳細2:</label>
+                <input type="text" id="acquirableLiveSkillDetail2" required tabindex="22">
+            </div>
+            <h2>育成スキル情報</h2>
+            <div class="input-group">
+                <label for="trainingSkill1">育成スキル1:</label>
+                <input type="text" id="trainingSkill1" required readonly class="readonly" tabindex="23">
+            </div>
+            <div class="input-group">
+                <label for="trainingSkill2">育成スキル2:</label>
+                <input type="text" id="trainingSkill2" required readonly class="readonly" tabindex="24">
+            </div>
+            <div class="input-group">
+                <label for="trainingSkill3">育成スキル3:</label>
+                <input type="text" id="trainingSkill3" required readonly class="readonly" tabindex="25">
+            </div>
+        </form>
+        <button onclick="generateText()">テキスト生成</button>
+        <button onclick="generateCardlist()">カードリスト生成</button>
+        <div id="output"></div>
+        <button onclick="copyToClipboard()">テキストコピー</button>
+    </div>
+
+
+</body>
+</html>

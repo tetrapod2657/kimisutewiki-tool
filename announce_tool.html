@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ゲームイベント情報抽出ツール</title>
+    <link rel="stylesheet" href="blue.css">
+
+</head>
+<body>
+    <div class="container">
+        <h1>イベント情報抽出ツール</h1>
+        
+        <p>
+            <a href="https://wikiwiki.jp/kimisute/">アルゴナビス -キミが見たステージへ-(キミステ)非公式攻略 Wiki*</a>の更新補助ツールです</p>
+        <p><a href="https://twitter.com/kimisute_INFO">キミステ公式Xアカウント</a>のイベントやスカウト（ガチャ）の告知テキストから重要情報を抽出し、Wiki形式に整形します。</p>
+        <p><a href="https://wikiwiki.jp/kimisute/%E3%82%A4%E3%83%99%E3%83%B3%E3%83%88%E4%B8%80%E8%A6%A7">イベント一覧</a>
+        と<a href="https://wikiwiki.jp/kimisute/%E3%82%B9%E3%82%AB%E3%82%A6%E3%83%88%E4%B8%80%E8%A6%A7">スカウト一覧</a>に貼り付けてください。</p>
+        <p>誕生日スカウト告知には未対応です。告知文フォーマットに変更があった場合は対応できなくなる可能性があります</p>
+        <div class="instruction-box">
+            <p>使い方：</p>
+            <ol>
+                <li>告知テキストを下のボックスに貼り付け</li>
+                <p>イベント告知の場合</p>
+                <img src="announce_tool_1.jpg" alt="イベント告知の場合" title="イベント告知の場合">
+                <p>スカウト告知の場合</p>
+                <img src="announce_tool_2.jpg" alt="スカウト告知の場合" title="スカウト告知の場合">
+                <li>「抽出する」ボタンをクリック</li>
+                <li>イベントとスカウトで自動的に出力フォーマットが変更されます
+                </li>
+            </ol>
+            <p style="margin-top: 15px;">注意点：</p>
+            <ul>
+                <li>キャラクター名の苗字と名前の間の半角スペース（例：「七星 蓮」）は削除してください。</li>
+                <li>抽出結果を必ず確認し、必要に応じて手動で調整してください</li>
+            </ul>
+        </div>
+
+        <textarea id="inputText" placeholder="イベントやスカウトの告知テキストを入力してください"></textarea>
+        <button onclick="extractInfo()">抽出する</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function extractInfo() {
+            const text = document.getElementById('inputText').value;
+            const result = processText(text);
+            document.getElementById('result').innerText = result || '抽出結果がありません。入力テキストを確認してください。';
+        }
+
+        function processText(text) {
+            const eventNameMatch = text.match(/「(.+?)」/);
+            let eventName = eventNameMatch ? eventNameMatch[1] : "";
+            const isScout = text.includes("スカウト");
+
+            const cardNames = text.match(/【(.+?)】/g)?.map(match => match.slice(1, -1)) || [];
+            const charaNames = text.match(/】\s*(.+?)\s/g)?.map(match => match.slice(1).trim()) || [];
+            //const charaNames = text.match(/】(.+?)\s/g)?.map(match => match.slice(1).trim()) || [];
+
+            const dateMatch = text.match(/(\d{1,2}\/\d{1,2} \d{1,2}:\d{2}) ～ (\d{1,2}\/\d{1,2} \d{1,2}:\d{2})/);
+            if (!dateMatch) return "日付が見つかりません";
+
+            let [startDate, endDate] = dateMatch.slice(1);
+
+            function formatDate(date) {
+                return date.replace(/(\d{1,2})\/(\d{1,2})/, (_, month, day) => 
+                    `${month.padStart(2, '0')}/${day.padStart(2, '0')}`
+                );
+            }
+
+            startDate = formatDate(startDate);
+            endDate = formatDate(endDate);
+
+            if (isScout && cardNames.length >= 2 && charaNames.length >= 2) {
+                return `|&attachref(./${eventName}スカウト.jpg,nolink);&br;${eventName}スカウト|SSR:[[${charaNames[0]}/${cardNames[0]}]]&br;SR:[[${charaNames[1]}/${cardNames[1]}]]|${startDate}~${endDate}|`;
+            } else {
+                return `|&attachref(./${eventName}.jpg,nolink);&br;${eventName}|SSR:[[${charaNames[0] || ''}/${cardNames[0] || ''}]]&br;背景:|${startDate}~${endDate}|`;
+            }
+        }
+    </script>
+</body>
+</html>
