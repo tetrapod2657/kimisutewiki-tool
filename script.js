@@ -403,70 +403,7 @@ function createSkillSelector(fieldId) {
     }
   }
 
-// function createSkillSelector(fieldId) {
-//   const inputField = document.getElementById(fieldId);
-//   const container = document.createElement('div');
-//   container.className = 'skill-selector-container';
-//   inputField.parentNode.insertBefore(container, inputField.nextSibling);
 
-//   const selects = ['skill-type', 'attribute', 'effect'].map(className => {
-//     const select = document.createElement('select');
-//     select.className = className;
-//     container.appendChild(select);
-//     return select;
-//   });
-
-//   const [skillTypeSelect, attributeSelect, effectSelect] = selects;
-
-//   Object.keys(skillData).forEach(type => {
-//     const option = document.createElement('option');
-//     option.value = option.textContent = type;
-//     skillTypeSelect.appendChild(option);
-//   });
-
-//   selects.forEach(select => select.addEventListener('change', () => updateSkill(fieldId)));
-
-//   updateSkill(fieldId);
-// }
-
-// function updateSkill(fieldId) {
-//   const container = document.getElementById(fieldId).nextSibling;
-//   const [skillTypeSelect, attributeSelect, effectSelect] = ['skill-type', 'attribute', 'effect'].map(className => container.querySelector(`.${className}`));
-
-//   const selectedType = skillTypeSelect.value;
-//   const typeData = skillData[selectedType];
-
-//   updateSelect(attributeSelect, typeData.attributes);
-//   updateSelect(effectSelect, typeData.effects);
-
-//   const selectedAttr = attributeSelect.value;
-//   const selectedEffect = effectSelect.value;
-
-//   const skillName = typeData.format
-//     .replace('(属性)', selectedAttr || '')
-//     .replace('{effect}', selectedEffect);
-
-//   document.getElementById(fieldId).value = skillName;
-// }
-
-// function updateSelect(select, options) {
-//   const currentValue = select.value;
-//   select.innerHTML = '';
-//   options.forEach(option => {
-//     const el = document.createElement('option');
-//     el.value = el.textContent = option;
-//     select.appendChild(el);
-//   });
-//   select.style.display = options.length ? 'inline' : 'none';
-  
-//   // 以前の選択値が新しいオプションリストに存在する場合、それを選択状態に保持
-//   if (options.includes(currentValue)) {
-//     select.value = currentValue;
-//   } else if (options.length > 0) {
-//     // そうでない場合、最初のオプションを選択
-//     select.value = options[0];
-//   }
-// }
 
 document.addEventListener('DOMContentLoaded', () => {
   ['trainingSkill1', 'trainingSkill2', 'trainingSkill3'].forEach(createSkillSelector);
