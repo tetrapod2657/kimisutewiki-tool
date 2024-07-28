@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>カードストーリー欄入力補助ツール</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e6f2ff 0%, #b3d9ff 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 800px;
+        }
+        h1, h2 {
+            color: #0066cc;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .story-section {
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #f0f8ff;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #0066cc;
+        }
+        button {
+            background-color: white;
+            color: #0066cc;
+            border: 1px solid #0066cc;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin: 2px;
+        }
+        button:hover {
+            background-color: #e6f2ff;
+        }
+        button.selected {
+            color: white;
+        }
+        #output, #notes {
+            background-color: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+        #notes {
+            background-color: #fffae6;
+            margin-top: 10px;
+        }
+        .status-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .status-field button {
+            width: auto;
+            height: auto;
+            padding: 10px 15px;
+            font-weight: bold;
+        }
+        .physical button.selected { background-color: #FF9999; }
+        .passion button.selected { background-color: #FF9933; }
+        .technique button.selected { background-color: #66CC66; }
+        .visual button.selected { background-color: #3399FF; }
+        .smart button.selected { background-color: #CC99FF; }
+        .stamina-positive.selected, button[data-type="condition"].selected { background-color: #66CC66; }
+        .stamina-negative.selected { background-color: #FF6666; }
+        .clear-button {
+            background-color: #FF9966;
+            color: white;
+            border-color: #FF9966;
+        }
+        .clear-button:hover {
+            background-color: #FF8040;
+        }
+        .generate-button {
+            background: linear-gradient(to right, #0066cc, #0099ff);
+            color: white;
+            border: none;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .generate-button:hover {
+            background: linear-gradient(to right, #005bb5, #0088e6);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>カードストーリー欄入力補助ツール</h1>
+        <p><a href="https://wikiwiki.jp/kimisute/">アルゴナビス -キミが見たステージへ-(キミステ)非公式攻略 Wiki*</a>の更新補助ツールです</p>
+        <p>「テキスト出力」ボタンで<a href="https://wikiwiki.jp/kimisute/%E7%B7%A8%E9%9B%86%E6%8E%B2%E7%A4%BA%E6%9D%BF/%E3%82%AB%E3%83%BC%E3%83%89%E5%80%8B%E5%88%A5%E3%83%9A%E3%83%BC%E3%82%B8%E6%A1%88">カード個別ページのカドスト欄</a>向けのストーリー効果出力が可能です</p>
+        <div class="instruction-box">
+
+        <div id="storyContainer"></div>
+        
+        <button class="generate-button" onclick="generateOutput()">テキスト出力</button>
+        
+        <div id="output"></div>
+        <div id="notes"></div>
+    </div>
+
+    <script>
+        const storyCount = 3;
+        const statusColors = {
+            'F': '#FF9999',
+            'P': '#FF9933',
+            'T': '#66CC66',
+            'V': '#3399FF',
+            'S': '#CC99FF'
+        };
+
+        function createStorySection(index) {
+            const section = document.createElement('div');
+            section.className = 'story-section';
+            section.innerHTML = `
+                <h2>${index + 1}話目</h2>
+                <div class="input-group">
+                    <label>体調:</label>
+                    <button onclick="toggleButton(this)" data-type="condition">好調</button>
+                </div>
+                <div class="input-group">
+                    <label>ステータス:</label>
+                    <div class="status-container">
+                        <div class="status-field physical">
+                            <button onclick="toggleButton(this)" data-type="status" data-value="F">フィジカル</button>
+                        </div>
+                        <div class="status-field passion">
+                            <button onclick="toggleButton(this)" data-type="status" data-value="P">パッション</button>
+                        </div>
+                        <div class="status-field technique">
+                            <button onclick="toggleButton(this)" data-type="status" data-value="T">テクニック</button>
+                        </div>
+                        <div class="status-field visual">
+                            <button onclick="toggleButton(this)" data-type="status" data-value="V">ビジュアル</button>
+                        </div>
+                        <div class="status-field smart">
+                            <button onclick="toggleButton(this)" data-type="status" data-value="S">スマート</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>体力変動:</label>
+                    <button class="stamina-positive" onclick="toggleButton(this)" data-type="stamina" data-value="8">+8</button>
+                    <button class="stamina-positive" onclick="toggleButton(this)" data-type="stamina" data-value="15">+15</button>
+                    <button class="stamina-negative" onclick="toggleButton(this)" data-type="stamina" data-value="-5">-5</button>
+                </div>
+                <button class="clear-button" onclick="clearSection(this.parentElement)">入力取り消し</button>
+            `;
+            return section;
+        }
+
+        function toggleButton(button) {
+            if (button.dataset.type === 'stamina') {
+                const isSelected = button.classList.contains('selected');
+                button.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+                if (!isSelected) {
+                    button.classList.add('selected');
+                }
+            } else {
+                button.classList.toggle('selected');
+            }
+        }
+
+        function clearSection(section) {
+            section.querySelectorAll('button').forEach(button => button.classList.remove('selected'));
+        }
+
+        function generateOutput() {
+            const output = [];
+            let showStaminaNote = false;
+            let showConditionNote = false;
+
+            document.querySelectorAll('.story-section').forEach((section, index) => {
+                const sectionOutput = [];
+                
+                // ステータス
+                section.querySelectorAll('button[data-type="status"].selected').forEach(button => {
+                    const status = button.dataset.value;
+                    sectionOutput.push(`+&color(,${statusColors[status]}){${status}};`);
+                });
+                
+                // 体力変動
+                const staminaButton = section.querySelector('button[data-type="stamina"].selected');
+                if (staminaButton) {
+                    const staminaValue = staminaButton.dataset.value;
+                    if (staminaValue === '8' || staminaValue === '15') {
+                        sectionOutput.push(`体力+${staminaValue}`);
+                        showStaminaNote = true;
+                    } else {
+                        sectionOutput.push(`体力${staminaValue}`);
+                    }
+                }
+                
+                // 体調
+                if (section.querySelector('button[data-type="condition"].selected')) {
+                    sectionOutput.push('好調');
+                    showConditionNote = true;
+                }
+                
+                if (sectionOutput.length === 0) {
+                    sectionOutput.push('-');
+                }
+                
+                output.push(`${index + 1}話目: ${sectionOutput.join(',')}`);
+            });
+            
+            document.getElementById('output').innerHTML = output.join('<br>');
+            
+            // 注意事項を表示（条件付き）
+            let notesHTML = '<h3>注意事項:</h3><ul>';
+            if (showStaminaNote) {
+                notesHTML += '<li>体力変動+8,+15が発生する場合 ⇒ 体力＋タグを付与してください</li>';
+            }
+            if (showConditionNote) {
+                notesHTML += '<li>体調:好調が発生する場合 ⇒ 好調タグを付与してください</li>';
+            }
+            notesHTML += '</ul>';
+            
+            document.getElementById('notes').innerHTML = showStaminaNote || showConditionNote ? notesHTML : '';
+        }
+
+        // 初期化
+        const container = document.getElementById('storyContainer');
+        for (let i = 0; i < storyCount; i++) {
+            container.appendChild(createStorySection(i));
+        }
+    </script>
+</body>
+</html>
